@@ -1811,14 +1811,25 @@
       gate.style.display = 'none';
       showChip(window.tpGetCurrentUser());
     }catch(e){
+      console.error('Sign-in error:', e);
       if(e && e.code === 'permission-denied'){
         error.textContent = "This Google account isn't approved for this planner.";
         note.textContent = 'Ask whoever set this up to add your email to the allowed list.';
         await firebase.auth().signOut();
       } else if(e && e.code === 'auth/popup-closed-by-user'){
         error.textContent = '';
+      } else if(e && e.code === 'auth/unauthorized-domain'){
+        error.textContent = 'This website\'s domain isn\'t authorized in Firebase yet.';
+        note.textContent = 'Add it under Authentication → Settings → Authorized domains.';
+      } else if(e && e.code === 'auth/operation-not-allowed'){
+        error.textContent = 'Google sign-in isn\'t enabled for this Firebase project.';
+        note.textContent = 'Enable it under Authentication → Sign-in method → Google.';
+      } else if(e && e.code === 'auth/popup-blocked'){
+        error.textContent = 'Your browser blocked the sign-in popup.';
+        note.textContent = 'Allow popups for this site and try again.';
       } else {
-        error.textContent = 'Sign-in failed. Check your Firebase setup and try again.';
+        error.textContent = 'Sign-in failed: ' + (e && (e.code || e.message) ? (e.code || e.message) : 'unknown error') + '.';
+        note.textContent = 'Check the browser console (F12) for more detail.';
       }
     }
     googleBtn.disabled = false;
