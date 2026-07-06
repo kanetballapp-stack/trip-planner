@@ -1807,7 +1807,7 @@
       // Sign-in succeeded — now confirm this account is actually allowed
       // through by attempting a real read, which Firestore's rules will
       // reject if the email isn't on the allowed list.
-      await window.storage.get('__access_check__');
+      await window.storage.get('access_check');
       gate.style.display = 'none';
       showChip(window.tpGetCurrentUser());
     }catch(e){
