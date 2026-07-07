@@ -179,7 +179,11 @@
   .tp-item-date{flex:1;min-width:70px;border:1px solid var(--line);border-radius:2px;padding:5px 7px;font-size:12px;font-family:'Space Mono',monospace;background:#fff;}
   .tp-item-sub{display:flex;gap:6px;padding-left:21px;}
   .tp-item-link{flex:1;min-width:0;border:1px solid var(--line);border-radius:2px;padding:5px 7px;font-size:12px;font-family:'Inter',sans-serif;background:#fff;color:var(--brass-deep);}
-  .tp-item-note{flex:1.4;min-width:0;border:1px solid var(--line);border-radius:2px;padding:5px 7px;font-size:12px;font-family:'Inter',sans-serif;background:#fff;}
+  .tp-item-note{
+    flex:1.4;min-width:0;border:1px solid var(--line);border-radius:2px;padding:5px 7px;
+    font-size:12px;font-family:'Inter',sans-serif;background:#fff;resize:none;overflow:hidden;
+    min-height:26px;line-height:1.4;
+  }
   .tp-item-link::placeholder, .tp-item-note::placeholder{color:var(--ink-soft);opacity:.7;}
   .tp-item-open{flex:0 0 auto;background:none;border:1px solid var(--line);border-radius:2px;padding:5px 8px;font-size:12px;cursor:pointer;color:var(--ink-soft);text-decoration:none;display:inline-flex;align-items:center;}
   .tp-item-open:hover{border-color:var(--brass);color:var(--brass-deep);}
@@ -607,8 +611,8 @@
       const updateOpenBtn = ()=>{ openBtn.href = p.url || '#'; openBtn.target = p.url ? '_blank' : ''; openBtn.rel='noopener noreferrer'; openBtn.style.opacity = p.url ? '1' : '.35'; openBtn.style.pointerEvents = p.url ? 'auto' : 'none'; };
       linkInp.addEventListener('input', updateOpenBtn);
       updateOpenBtn();
-      const noteInp = document.createElement('input'); noteInp.className='tp-item-note'; noteInp.value=p.notes||''; noteInp.placeholder='Notes';
-      noteInp.addEventListener('input', e=>{ p.notes = e.target.value; save(destId); });
+      const noteInp = document.createElement('textarea'); noteInp.className='tp-item-note'; noteInp.value=p.notes||''; noteInp.placeholder='Notes'; noteInp.rows=1;
+      noteInp.addEventListener('input', e=>{ p.notes = e.target.value; save(destId); autoGrowTextarea(noteInp); });
       sub.appendChild(linkInp); sub.appendChild(openBtn); sub.appendChild(noteInp);
 
       card.appendChild(top); card.appendChild(sub);
@@ -621,6 +625,7 @@
     const addFn = ()=>{ const v=inp.value.trim(); if(!v) return; leg.places.push({id:uid(), text:v, url:urlInp.value.trim(), notes:'', seen:false}); inp.value=''; urlInp.value=''; renderPlaces(container,leg,destId); save(destId); };
     btn.addEventListener('click', addFn); inp.addEventListener('keydown', e=>{ if(e.key==='Enter') addFn(); });
     addRow.appendChild(inp); addRow.appendChild(urlInp); addRow.appendChild(btn); container.appendChild(addRow);
+    container.querySelectorAll('.tp-item-note').forEach(autoGrowTextarea);
   }
 
   function renderEvents(container, leg, destId){
@@ -645,8 +650,8 @@
       const openBtn = document.createElement('a'); openBtn.className='tp-item-open'; openBtn.textContent='↗'; openBtn.title='Open link';
       const updateOpenBtn = ()=>{ openBtn.href = ev.url || '#'; openBtn.target = ev.url ? '_blank' : ''; openBtn.rel='noopener noreferrer'; openBtn.style.opacity = ev.url ? '1' : '.35'; openBtn.style.pointerEvents = ev.url ? 'auto' : 'none'; };
       updateOpenBtn();
-      const noteInp = document.createElement('input'); noteInp.className='tp-item-note'; noteInp.value=ev.notes||''; noteInp.placeholder='Notes';
-      noteInp.addEventListener('input', e=>{ ev.notes = e.target.value; save(destId); });
+      const noteInp = document.createElement('textarea'); noteInp.className='tp-item-note'; noteInp.value=ev.notes||''; noteInp.placeholder='Notes'; noteInp.rows=1;
+      noteInp.addEventListener('input', e=>{ ev.notes = e.target.value; save(destId); autoGrowTextarea(noteInp); });
       sub.appendChild(linkInp); sub.appendChild(openBtn); sub.appendChild(noteInp);
 
       card.appendChild(top); card.appendChild(sub);
@@ -660,6 +665,7 @@
     const addFn = ()=>{ const v=inp.value.trim(); if(!v) return; leg.events.push({id:uid(), text:v, date:dateInp.value.trim(), url:urlInp.value.trim(), notes:'', booked:false}); inp.value=''; dateInp.value=''; urlInp.value=''; renderEvents(container,leg,destId); save(destId); };
     btn.addEventListener('click', addFn); inp.addEventListener('keydown', e=>{ if(e.key==='Enter') addFn(); });
     addRow.appendChild(inp); addRow.appendChild(dateInp); addRow.appendChild(urlInp); addRow.appendChild(btn); container.appendChild(addRow);
+    container.querySelectorAll('.tp-item-note').forEach(autoGrowTextarea);
   }
 
   function renderDayPlan(container, leg, destId){
