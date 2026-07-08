@@ -1122,12 +1122,9 @@
         // if settled, the debt has already changed hands directly and drops out of the balance
       });
     });
-    // Direct cash transfers between travelers reduce (or reverse) what's outstanding
-    (budget.transfers||[]).forEach(tr=>{
-      const amt = parseFloat(tr.amount) || 0;
-      if(outstanding[tr.from] !== undefined) outstanding[tr.from] += amt;
-      if(outstanding[tr.to] !== undefined) outstanding[tr.to] -= amt;
-    });
+    // Note: recorded cash payments (budget.transfers) are intentionally NOT
+    // factored in here — they're a standalone log only, to avoid double-counting
+    // against the per-expense "mark share as paid" toggles above.
     return budget.travelers.map(t=>({
       id:t.id, name:t.name, color:t.color,
       paid: paid[t.id]||0, share: share[t.id]||0,
@@ -1200,7 +1197,7 @@
     container.appendChild(h3);
     const caption = document.createElement('div');
     caption.style.cssText = 'font-size:11px;color:var(--ink-soft);margin-bottom:10px;font-family:"Space Mono",monospace;';
-    caption.textContent = 'Reflects shares marked as paid back and any cash payments recorded below.';
+    caption.textContent = 'Reflects shares marked as paid back in the expense table below. Recorded cash payments (further down) are a separate log and don\'t affect this.';
     container.appendChild(caption);
     const total = budget.expenses.reduce((s,e)=>s + (parseFloat(e.amount)||0), 0);
     const totalEl = document.createElement('div'); totalEl.className='tp-summary-total'; totalEl.textContent = fmtMoney(total);
@@ -1445,11 +1442,11 @@
 
   function renderTransferForm(container){
     container.innerHTML = '';
-    const h3 = document.createElement('h3'); h3.textContent = 'Record a cash payment between travelers';
+    const h3 = document.createElement('h3'); h3.textContent = 'Cash payments log (standalone — doesn\'t affect balances)';
     container.appendChild(h3);
     const hint = document.createElement('div');
     hint.style.cssText = 'font-size:11px;color:var(--ink-soft);margin-bottom:12px;font-family:"Space Mono",monospace;';
-    hint.textContent = 'e.g. Alex hands Sam £60 cash — record it here and the balances below update automatically.';
+    hint.textContent = 'e.g. Alex hands Sam £60 cash. This is just a personal record — it won\'t change the owes/owed balances above. To actually settle a debt, use the "mark share as paid" toggles in the expense table instead.';
     container.appendChild(hint);
 
     const grid = document.createElement('div'); grid.className='tp-exp-grid';
@@ -1782,7 +1779,12 @@
     const viewContacts = document.getElementById('tp-view-contacts');
     const tabs = [
       {btn:btnSummary, view:viewSummary, onShow:()=>{ renderSummaryView(); if(summaryMap) setTimeout(()=>summaryMap.invalidateSize(), 50); }},
-      {btn:btnItin, view:viewItin, onShow:()=>{}},
+      {btn:btnItin, view:viewItin, onShow:()=>{
+        // Elements inside a display:none container report scrollHeight as 0,
+        // so auto-sizing done while this tab was hidden needs to be re-run
+        // now that it's actually visible and measurable.
+        viewItin.querySelectorAll('.tp-item-note, .tp-summary-note').forEach(autoGrowTextarea);
+      }},
       {btn:btnBudget, view:viewBudget, onShow:()=>{}},
       {btn:btnContacts, view:viewContacts, onShow:()=>{}}
     ];
